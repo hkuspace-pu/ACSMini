@@ -1,3 +1,7 @@
+/*
+This example runs tests on the tiny AES encryption.
+*/
+
 #include <Crypto.h>
 #include <AES.h>
 #include <string.h>

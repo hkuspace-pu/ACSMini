@@ -1,31 +1,9 @@
 /*
- * Copyright (C) 2015 Southern Storm Software, Pty Ltd.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
-
-/*
-This example runs tests on the BLAKE2b implementation to verify correct behaviour.
+This example runs tests on the BLAKE2s encryption.
 */
 
 #include <Crypto.h>
-#include <BLAKE2b.h>
+#include <BLAKE2s.h>
 #include <string.h>
 #if defined(ESP8266) || defined(ESP32)
 #include <pgmspace.h>
@@ -33,8 +11,8 @@ This example runs tests on the BLAKE2b implementation to verify correct behaviou
 #include <avr/pgmspace.h>
 #endif
 
-#define HASH_SIZE 64
-#define BLOCK_SIZE 128
+#define HASH_SIZE 32
+#define BLOCK_SIZE 64
 
 struct TestHashVector
 {
@@ -43,60 +21,44 @@ struct TestHashVector
     uint8_t hash[HASH_SIZE];
 };
 
-// Test vectors generated with the reference implementation of BLAKE2b.
-static TestHashVector const testVectorBLAKE2b_1 PROGMEM = {
-    "BLAKE2b #1",
+// Test vectors generated with the reference implementation of BLAKE2s.
+static TestHashVector const testVectorBLAKE2s_1 = {
+    "BLAKE2s #1",
     "",
-    {0x78, 0x6a, 0x02, 0xf7, 0x42, 0x01, 0x59, 0x03,
-     0xc6, 0xc6, 0xfd, 0x85, 0x25, 0x52, 0xd2, 0x72,
-     0x91, 0x2f, 0x47, 0x40, 0xe1, 0x58, 0x47, 0x61,
-     0x8a, 0x86, 0xe2, 0x17, 0xf7, 0x1f, 0x54, 0x19,
-     0xd2, 0x5e, 0x10, 0x31, 0xaf, 0xee, 0x58, 0x53,
-     0x13, 0x89, 0x64, 0x44, 0x93, 0x4e, 0xb0, 0x4b,
-     0x90, 0x3a, 0x68, 0x5b, 0x14, 0x48, 0xb7, 0x55,
-     0xd5, 0x6f, 0x70, 0x1a, 0xfe, 0x9b, 0xe2, 0xce}
+    {0x69, 0x21, 0x7a, 0x30, 0x79, 0x90, 0x80, 0x94,
+     0xe1, 0x11, 0x21, 0xd0, 0x42, 0x35, 0x4a, 0x7c,
+     0x1f, 0x55, 0xb6, 0x48, 0x2c, 0xa1, 0xa5, 0x1e,
+     0x1b, 0x25, 0x0d, 0xfd, 0x1e, 0xd0, 0xee, 0xf9}
 };
-static TestHashVector const testVectorBLAKE2b_2 PROGMEM = {
-    "BLAKE2b #2",
+static TestHashVector const testVectorBLAKE2s_2 = {
+    "BLAKE2s #2",
     "abc",
-    {0xba, 0x80, 0xa5, 0x3f, 0x98, 0x1c, 0x4d, 0x0d,
-     0x6a, 0x27, 0x97, 0xb6, 0x9f, 0x12, 0xf6, 0xe9,
-     0x4c, 0x21, 0x2f, 0x14, 0x68, 0x5a, 0xc4, 0xb7,
-     0x4b, 0x12, 0xbb, 0x6f, 0xdb, 0xff, 0xa2, 0xd1,
-     0x7d, 0x87, 0xc5, 0x39, 0x2a, 0xab, 0x79, 0x2d,
-     0xc2, 0x52, 0xd5, 0xde, 0x45, 0x33, 0xcc, 0x95,
-     0x18, 0xd3, 0x8a, 0xa8, 0xdb, 0xf1, 0x92, 0x5a,
-     0xb9, 0x23, 0x86, 0xed, 0xd4, 0x00, 0x99, 0x23}
+    {0x50, 0x8c, 0x5e, 0x8c, 0x32, 0x7c, 0x14, 0xe2,
+     0xe1, 0xa7, 0x2b, 0xa3, 0x4e, 0xeb, 0x45, 0x2f,
+     0x37, 0x45, 0x8b, 0x20, 0x9e, 0xd6, 0x3a, 0x29,
+     0x4d, 0x99, 0x9b, 0x4c, 0x86, 0x67, 0x59, 0x82}
 };
-static TestHashVector const testVectorBLAKE2b_3 PROGMEM = {
-    "BLAKE2b #3",
+static TestHashVector const testVectorBLAKE2s_3 = {
+    "BLAKE2s #3",
     "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
-    {0x72, 0x85, 0xff, 0x3e, 0x8b, 0xd7, 0x68, 0xd6,
-     0x9b, 0xe6, 0x2b, 0x3b, 0xf1, 0x87, 0x65, 0xa3,
-     0x25, 0x91, 0x7f, 0xa9, 0x74, 0x4a, 0xc2, 0xf5,
-     0x82, 0xa2, 0x08, 0x50, 0xbc, 0x2b, 0x11, 0x41,
-     0xed, 0x1b, 0x3e, 0x45, 0x28, 0x59, 0x5a, 0xcc,
-     0x90, 0x77, 0x2b, 0xdf, 0x2d, 0x37, 0xdc, 0x8a,
-     0x47, 0x13, 0x0b, 0x44, 0xf3, 0x3a, 0x02, 0xe8,
-     0x73, 0x0e, 0x5a, 0xd8, 0xe1, 0x66, 0xe8, 0x88}
+    {0x6f, 0x4d, 0xf5, 0x11, 0x6a, 0x6f, 0x33, 0x2e,
+     0xda, 0xb1, 0xd9, 0xe1, 0x0e, 0xe8, 0x7d, 0xf6,
+     0x55, 0x7b, 0xea, 0xb6, 0x25, 0x9d, 0x76, 0x63,
+     0xf3, 0xbc, 0xd5, 0x72, 0x2c, 0x13, 0xf1, 0x89}
 };
-static TestHashVector const testVectorBLAKE2b_4 PROGMEM = {
-    "BLAKE2b #4",
+static TestHashVector const testVectorBLAKE2s_4 = {
+    "BLAKE2s #4",
     "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
     "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu",
-    {0xce, 0x74, 0x1a, 0xc5, 0x93, 0x0f, 0xe3, 0x46,
-     0x81, 0x11, 0x75, 0xc5, 0x22, 0x7b, 0xb7, 0xbf,
-     0xcd, 0x47, 0xf4, 0x26, 0x12, 0xfa, 0xe4, 0x6c,
-     0x08, 0x09, 0x51, 0x4f, 0x9e, 0x0e, 0x3a, 0x11,
-     0xee, 0x17, 0x73, 0x28, 0x71, 0x47, 0xcd, 0xea,
-     0xee, 0xdf, 0xf5, 0x07, 0x09, 0xaa, 0x71, 0x63,
-     0x41, 0xfe, 0x65, 0x24, 0x0f, 0x4a, 0xd6, 0x77,
-     0x7d, 0x6b, 0xfa, 0xf9, 0x72, 0x6e, 0x5e, 0x52}
+    {0x35, 0x8d, 0xd2, 0xed, 0x07, 0x80, 0xd4, 0x05,
+     0x4e, 0x76, 0xcb, 0x6f, 0x3a, 0x5b, 0xce, 0x28,
+     0x41, 0xe8, 0xe2, 0xf5, 0x47, 0x43, 0x1d, 0x4d,
+     0x09, 0xdb, 0x21, 0xb6, 0x6d, 0x94, 0x1f, 0xc7}
 };
 
-BLAKE2b blake2b;
+BLAKE2s blake2s;
 
-byte buffer[BLOCK_SIZE + 2];
+byte buffer[128];
 
 bool testHash_N(Hash *hash, const struct TestHashVector *test, size_t inc)
 {
@@ -121,10 +83,6 @@ bool testHash_N(Hash *hash, const struct TestHashVector *test, size_t inc)
 void testHash(Hash *hash, const struct TestHashVector *test)
 {
     bool ok;
-    TestHashVector vec;
-
-    memcpy_P(&vec, test, sizeof(vec));
-    test = &vec;
 
     Serial.print(test->name);
     Serial.print(" ... ");
@@ -204,7 +162,7 @@ void testHMAC(Hash *hash, size_t keyLen)
 {
     uint8_t result[HASH_SIZE];
 
-    Serial.print("HMAC-BLAKE2b keysize=");
+    Serial.print("HMAC-BLAKE2s keysize=");
     Serial.print(keyLen);
     Serial.print(" ... ");
 
@@ -251,7 +209,7 @@ static void selftest_seq(uint8_t *out, size_t len, uint32_t seed)
 }
 
 // Incremental version of above to save memory.
-static void selftest_seq_incremental(BLAKE2b *blake, size_t len, uint32_t seed)
+static void selftest_seq_incremental(BLAKE2s *blake, size_t len, uint32_t seed)
 {
     size_t i;
     uint32_t t, a , b;
@@ -265,7 +223,7 @@ static void selftest_seq_incremental(BLAKE2b *blake, size_t len, uint32_t seed)
         b = t;
         buffer[i % 128] = (t >> 24) & 0xFF;
         if ((i % 128) == 127)
-            blake->update(buffer, 128);
+            blake->update(buffer, sizeof(buffer));
     }
 
     blake->update(buffer, len % 128);
@@ -276,48 +234,48 @@ static void selftest_seq_incremental(BLAKE2b *blake, size_t len, uint32_t seed)
 void testRFC7693()
 {
     // Grand hash of hash results.
-    static const uint8_t blake2b_res[32] PROGMEM = {
-        0xC2, 0x3A, 0x78, 0x00, 0xD9, 0x81, 0x23, 0xBD,
-        0x10, 0xF5, 0x06, 0xC6, 0x1E, 0x29, 0xDA, 0x56,
-        0x03, 0xD7, 0x63, 0xB8, 0xBB, 0xAD, 0x2E, 0x73,
-        0x7F, 0x5E, 0x76, 0x5A, 0x7B, 0xCC, 0xD4, 0x75
+    static const uint8_t blake2s_res[32] PROGMEM = {
+        0x6A, 0x41, 0x1F, 0x08, 0xCE, 0x25, 0xAD, 0xCD,
+        0xFB, 0x02, 0xAB, 0xA6, 0x41, 0x45, 0x1C, 0xEC,
+        0x53, 0xC5, 0x98, 0xB2, 0x4F, 0x4F, 0xC7, 0x87,
+        0xFB, 0xDC, 0x88, 0x79, 0x7F, 0x4C, 0x1D, 0xFE
     };
     // Parameter sets.
-    static const uint8_t b2b_md_len[4] PROGMEM = { 20, 32, 48, 64 };
-    static const uint16_t b2b_in_len[6] PROGMEM = { 0, 3, 128, 129, 255, 1024 };
+    static const uint8_t b2s_md_len[4] PROGMEM = { 16, 20, 28, 32 };
+    static const uint16_t b2s_in_len[6] PROGMEM = { 0,  3,  64, 65, 255, 1024 };
 
     size_t i, j, outlen, inlen;
-    uint8_t md[64], key[64];
-    BLAKE2b inner;
+    uint8_t md[32], key[32];
+    BLAKE2s inner;
 
-    Serial.print("BLAKE2b RFC 7693 ... ");
+    Serial.print("BLAKE2s RFC 7693 ... ");
 
     // 256-bit hash for testing.
-    blake2b.reset(32);
+    blake2s.reset(32);
 
     for (i = 0; i < 4; i++) {
-        outlen = pgm_read_byte(&(b2b_md_len[i]));
+        outlen = pgm_read_byte(&(b2s_md_len[i]));
         for (j = 0; j < 6; j++) {
-            inlen = pgm_read_word(&(b2b_in_len[j]));
+            inlen = pgm_read_word(&(b2s_in_len[j]));
 
             inner.reset(outlen);                // unkeyed hash
             selftest_seq_incremental(&inner, inlen, inlen);
             inner.finalize(md, outlen);
-            blake2b.update(md, outlen);         // hash the hash
+            blake2s.update(md, outlen);         // hash the hash
 
             selftest_seq(key, outlen, outlen);  // keyed hash
             inner.reset(key, outlen, outlen);
             selftest_seq_incremental(&inner, inlen, inlen);
             inner.finalize(md, outlen);
-            blake2b.update(md, outlen);         // hash the hash
+            blake2s.update(md, outlen);         // hash the hash
         }
     }
 
     // Compute and compare the hash of hashes.
     bool ok = true;
-    blake2b.finalize(md, 32);
+    blake2s.finalize(md, 32);
     for (i = 0; i < 32; i++) {
-        if (md[i] != pgm_read_byte(&(blake2b_res[i])))
+        if (md[i] != pgm_read_byte(&(blake2s_res[i])))
             ok = false;
     }
 
@@ -326,30 +284,6 @@ void testRFC7693()
         Serial.println("Passed");
     else
         Serial.println("Failed");
-}
-
-void perfKeyed(BLAKE2b *hash)
-{
-    unsigned long start;
-    unsigned long elapsed;
-    int count;
-
-    Serial.print("Keyed Reset ... ");
-
-    for (size_t posn = 0; posn < sizeof(buffer); ++posn)
-        buffer[posn] = (uint8_t)posn;
-
-    start = micros();
-    for (count = 0; count < 1000; ++count) {
-        hash->reset(buffer, hash->hashSize());
-        hash->update(buffer, 1);    // To flush the key chunk.
-    }
-    elapsed = micros() - start;
-
-    Serial.print(elapsed / 1000.0);
-    Serial.print("us per op, ");
-    Serial.print((1000.0 * 1000000.0) / elapsed);
-    Serial.println(" ops per second");
 }
 
 void perfFinalize(Hash *hash)
@@ -374,35 +308,98 @@ void perfFinalize(Hash *hash)
     Serial.println(" ops per second");
 }
 
+void perfKeyed(BLAKE2s *hash)
+{
+    unsigned long start;
+    unsigned long elapsed;
+    int count;
+
+    Serial.print("Keyed Reset ... ");
+
+    for (size_t posn = 0; posn < sizeof(buffer); ++posn)
+        buffer[posn] = (uint8_t)posn;
+
+    start = micros();
+    for (count = 0; count < 1000; ++count) {
+        hash->reset(buffer, hash->hashSize());
+        hash->update(buffer, 1);    // To flush the key chunk.
+    }
+    elapsed = micros() - start;
+
+    Serial.print(elapsed / 1000.0);
+    Serial.print("us per op, ");
+    Serial.print((1000.0 * 1000000.0) / elapsed);
+    Serial.println(" ops per second");
+}
+
+void perfHMAC(Hash *hash)
+{
+    unsigned long start;
+    unsigned long elapsed;
+    int count;
+
+    Serial.print("HMAC Reset ... ");
+
+    for (size_t posn = 0; posn < sizeof(buffer); ++posn)
+        buffer[posn] = (uint8_t)posn;
+
+    start = micros();
+    for (count = 0; count < 1000; ++count) {
+        hash->resetHMAC(buffer, hash->hashSize());
+    }
+    elapsed = micros() - start;
+
+    Serial.print(elapsed / 1000.0);
+    Serial.print("us per op, ");
+    Serial.print((1000.0 * 1000000.0) / elapsed);
+    Serial.println(" ops per second");
+
+    Serial.print("HMAC Finalize ... ");
+
+    hash->resetHMAC(buffer, hash->hashSize());
+    hash->update("abc", 3);
+    start = micros();
+    for (count = 0; count < 1000; ++count) {
+        hash->finalizeHMAC(buffer, hash->hashSize(), buffer, hash->hashSize());
+    }
+    elapsed = micros() - start;
+
+    Serial.print(elapsed / 1000.0);
+    Serial.print("us per op, ");
+    Serial.print((1000.0 * 1000000.0) / elapsed);
+    Serial.println(" ops per second");
+}
+
 void setup()
 {
     Serial.begin(9600);
 
     Serial.println();
 
-    Serial.print("State Size ...");
-    Serial.println(sizeof(BLAKE2b));
+    Serial.print("State Size ... ");
+    Serial.println(sizeof(BLAKE2s));
     Serial.println();
 
     Serial.println("Test Vectors:");
-    testHash(&blake2b, &testVectorBLAKE2b_1);
-    testHash(&blake2b, &testVectorBLAKE2b_2);
-    testHash(&blake2b, &testVectorBLAKE2b_3);
-    testHash(&blake2b, &testVectorBLAKE2b_4);
-    testHMAC(&blake2b, (size_t)0);
-    testHMAC(&blake2b, 1);
-    testHMAC(&blake2b, HASH_SIZE);
-    testHMAC(&blake2b, BLOCK_SIZE);
-    testHMAC(&blake2b, BLOCK_SIZE + 1);
-    testHMAC(&blake2b, BLOCK_SIZE + 2);
+    testHash(&blake2s, &testVectorBLAKE2s_1);
+    testHash(&blake2s, &testVectorBLAKE2s_2);
+    testHash(&blake2s, &testVectorBLAKE2s_3);
+    testHash(&blake2s, &testVectorBLAKE2s_4);
+    testHMAC(&blake2s, (size_t)0);
+    testHMAC(&blake2s, 1);
+    testHMAC(&blake2s, HASH_SIZE);
+    testHMAC(&blake2s, BLOCK_SIZE);
+    testHMAC(&blake2s, BLOCK_SIZE + 1);
+    testHMAC(&blake2s, sizeof(buffer));
     testRFC7693();
 
     Serial.println();
 
     Serial.println("Performance Tests:");
-    perfHash(&blake2b);
-    perfKeyed(&blake2b);
-    perfFinalize(&blake2b);
+    perfHash(&blake2s);
+    perfFinalize(&blake2s);
+    perfKeyed(&blake2s);
+    perfHMAC(&blake2s);
 }
 
 void loop()
