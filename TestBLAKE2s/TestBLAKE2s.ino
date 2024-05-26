@@ -1,5 +1,5 @@
 /*
-This example runs tests on the BLAKE2s encryption.
+This example runs tests on the ChaCha encryption.
 */
 
 #include <Crypto.h>
