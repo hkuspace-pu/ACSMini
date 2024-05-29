@@ -16,3 +16,5 @@
 ##### The ACS Mini System offers a modular and extensible architecture, allowing for seamless integration with various construction-related applications and IoT platforms.
 
 ![plymouth](https://github.com/hkuspace-pu/ACSMini/blob/main/documents/plymouth.jpg)
+
+[ACS Mini System Project Board](https://trello.com/w/acsminisystemproject)
