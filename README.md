@@ -15,3 +15,4 @@
 * #### Flexible Integration
 ##### The ACS Mini System offers a modular and extensible architecture, allowing for seamless integration with various construction-related applications and IoT platforms.
 
+![plymouth](https://github.com/hkuspace-pu/ACSMini/blob/main/documents/plymouth.jpg)
