@@ -12,5 +12,6 @@
 ##### The ACS Mini System aims to provide a comprehensive solution for automating the collection, processing, and monitoring of construction data, streamlining operations and improving decision-making.
 * #### Affordability and Suitability for SMEs
 ##### The system is designed to be a cost-effective and suitable solution for small and medium-sized enterprises in the construction industry, addressing their specific needs and constraints.
-* #### Flexible Integration: The ACS Mini System offers a modular and extensible architecture, allowing for seamless integration with various construction-related applications and IoT platforms.
+* #### Flexible Integration
+##### The ACS Mini System offers a modular and extensible architecture, allowing for seamless integration with various construction-related applications and IoT platforms.
 
