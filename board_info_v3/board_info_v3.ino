@@ -2,10 +2,10 @@
 
 // Function to retrieve flash memory size
 unsigned int getFlashMemorySize() {
-  #if defined(__AVR_ATmega328P__)
-    return 32768;  // 32KB for ATmega328P
-  #elif defined(__AVR_ATmega2560__)
-    return 253952; // 256KB for ATmega2560 (Arduino Mega 2560)
+  #if defined(ESP8266)
+    return ESP.getFlashChipSize();
+  #elif defined(ESP32)
+    return ESP.getFlashChipSize();
   #else
     return 0;      // Unknown flash memory size
   #endif
@@ -13,10 +13,10 @@ unsigned int getFlashMemorySize() {
 
 // Function to retrieve SRAM size
 unsigned int getSRAMSize() {
-  #if defined(__AVR_ATmega328P__)
-    return 2048;   // 2KB for ATmega328P
-  #elif defined(__AVR_ATmega2560__)
-    return 8192;   // 8KB for ATmega2560 (Arduino Mega 2560)
+  #if defined(ESP8266)
+    return ESP.getFreeHeap();
+  #elif defined(ESP32)
+    return ESP.getHeapSize();
   #else
     return 0;      // Unknown SRAM size
   #endif
@@ -24,10 +24,10 @@ unsigned int getSRAMSize() {
 
 // Function to retrieve EEPROM size
 unsigned int getEEPROMSize() {
-  #if defined(__AVR_ATmega328P__)
-    return 1024;   // 1KB for ATmega328P
-  #elif defined(__AVR_ATmega2560__)
-    return 4096;   // 4KB for ATmega2560 (Arduino Mega 2560)
+  #if defined(ESP8266)
+    return 4096;   // 4KB EEPROM for ESP8266
+  #elif defined(ESP32)
+    return 4096;   // 4KB EEPROM for ESP32
   #else
     return 0;      // Unknown EEPROM size
   #endif
@@ -38,17 +38,15 @@ void setup() {
 
   // Print Arduino board information
   Serial.print("Board: ");
-#ifdef BOARD_NAME
-  Serial.println(BOARD_NAME);
+#if defined(ARDUINO_WEMOS_D1MINI)
+  Serial.println("WeMos D1 Mini");
 #else
   Serial.println("Unknown board");
 #endif
 
   // Print microcontroller information
   Serial.print("Microcontroller: ");
-#ifdef __AVR_ARCH__
-  Serial.println("AVR");
-#elif defined(ESP8266)
+#ifdef ESP8266
   Serial.println("ESP8266");
 #elif defined(ESP32)
   Serial.println("ESP32");
